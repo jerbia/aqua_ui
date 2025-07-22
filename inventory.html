@@ -326,6 +326,41 @@
                 </div>
             </main>
         </div>
+
+        <!-- Detail Panel -->
+        <div class="detail-panel" id="detailPanel">
+            <div class="detail-header">
+                <div class="detail-title">
+                    <h2 id="detailTitle">Vulnerability Scan Details</h2>
+                    <div class="detail-subtitle">
+                        <span id="detailImageName"></span>
+                        <span id="detailCreated"></span>
+                    </div>
+                </div>
+                <button class="btn btn-link close-detail" onclick="closeDetailPanel()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="detail-tabs">
+                <button class="tab-btn active" data-tab="risk">Risk</button>
+                <button class="tab-btn" data-tab="dynamic">Dynamic Threat Analysis</button>
+                <button class="tab-btn" data-tab="vulnerabilities">Vulnerabilities</button>
+                <button class="tab-btn" data-tab="resources">Resources</button>
+                <button class="tab-btn" data-tab="sensitive">Sensitive Data</button>
+                <button class="tab-btn" data-tab="malware">Malware</button>
+                <button class="tab-btn" data-tab="information">Information</button>
+                <button class="tab-btn" data-tab="scan-history">Scan History</button>
+                <button class="tab-btn" data-tab="audit">Audit</button>
+            </div>
+
+            <div class="detail-content" id="detailContent">
+                <!-- Content will be populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Detail Panel Overlay -->
+        <div class="detail-overlay" id="detailOverlay" onclick="closeDetailPanel()"></div>
     </div>
 
     <script src="script.js"></script>

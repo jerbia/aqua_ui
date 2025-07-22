@@ -270,6 +270,13 @@ function renderImagesTable() {
     
     filteredData.forEach(item => {
         const row = document.createElement('tr');
+        row.style.cursor = 'pointer';
+        row.onclick = (e) => {
+            // Don't open panel if clicking on checkbox
+            if (e.target.type !== 'checkbox') {
+                openDetailPanel(item);
+            }
+        };
         row.innerHTML = `
             <td><input type="checkbox" data-id="${item.id}"></td>
             <td>
@@ -529,4 +536,472 @@ function addSampleFilter() {
 // Initialize with sample data
 setTimeout(() => {
     updateTotalCount();
-}, 100); 
+}, 100);
+
+// Detail Panel Functions
+let currentDetailItem = null;
+let currentTab = 'risk';
+
+function openDetailPanel(item) {
+    currentDetailItem = item;
+    currentTab = 'risk';
+    
+    const panel = document.getElementById('detailPanel');
+    const overlay = document.getElementById('detailOverlay');
+    const imageNameEl = document.getElementById('detailImageName');
+    const createdEl = document.getElementById('detailCreated');
+    
+    // Update header info
+    imageNameEl.textContent = item.name;
+    createdEl.textContent = `Created 7 months ago`;
+    
+    // Reset active tab
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('[data-tab="risk"]').classList.add('active');
+    
+    // Show content for risk tab
+    updateDetailContent();
+    
+    // Show panel
+    panel.classList.add('open');
+    overlay.classList.add('active');
+    
+    // Add event listeners for tabs
+    setupTabListeners();
+}
+
+function closeDetailPanel() {
+    const panel = document.getElementById('detailPanel');
+    const overlay = document.getElementById('detailOverlay');
+    
+    panel.classList.remove('open');
+    overlay.classList.remove('active');
+    
+    currentDetailItem = null;
+}
+
+function setupTabListeners() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = () => switchTab(btn.dataset.tab);
+    });
+}
+
+function switchTab(tabName) {
+    currentTab = tabName;
+    
+    // Update active tab
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    
+    // Update content
+    updateDetailContent();
+}
+
+function updateDetailContent() {
+    const contentEl = document.getElementById('detailContent');
+    
+    switch (currentTab) {
+        case 'risk':
+            contentEl.innerHTML = getRiskTabContent();
+            break;
+        case 'vulnerabilities':
+            contentEl.innerHTML = getVulnerabilitiesTabContent();
+            break;
+        case 'resources':
+            contentEl.innerHTML = getResourcesTabContent();
+            break;
+        case 'sensitive':
+            contentEl.innerHTML = getSensitiveDataTabContent();
+            break;
+        case 'information':
+            contentEl.innerHTML = getInformationTabContent();
+            break;
+        case 'scan-history':
+            contentEl.innerHTML = getScanHistoryTabContent();
+            break;
+        default:
+            contentEl.innerHTML = getEmptyTabContent(currentTab);
+            break;
+    }
+}
+
+function getRiskTabContent() {
+    return `
+        <div class="compliance-header">
+            <i class="fas fa-check-circle compliance-icon"></i>
+            <div class="compliance-info">
+                <h3>Image Is Compliant</h3>
+                <p>Image scanned on 2025-05-18 | 04:37 PM</p>
+            </div>
+            <button class="rescan-btn">
+                <i class="fas fa-sync"></i> Rescan Image
+            </button>
+        </div>
+
+        <div class="assurance-section">
+            <h3>Image Assurance</h3>
+            <div class="assurance-policies">
+                <div class="policy-item">
+                    <i class="fas fa-check-circle policy-status"></i>
+                    <div class="policy-info">
+                        <div class="policy-name">Policy: Manasi-demo</div>
+                    </div>
+                    <span class="policy-badge">Passed</span>
+                </div>
+                <div class="policy-item">
+                    <i class="fas fa-check-circle policy-status"></i>
+                    <div class="policy-info">
+                        <div class="policy-name">Policy: Malware-Default-Policy</div>
+                    </div>
+                    <span class="policy-badge">Passed</span>
+                </div>
+                <div class="policy-item">
+                    <i class="fas fa-check-circle policy-status"></i>
+                    <div class="policy-info">
+                        <div class="policy-name">Policy: Sensitive-Data-Default-Policy</div>
+                    </div>
+                    <span class="policy-badge">Passed</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="scan-results">
+            <div class="scan-card">
+                <div class="scan-icon scan">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="scan-title">Image Scan</div>
+                <div class="scan-status completed">Completed</div>
+            </div>
+            <div class="scan-card">
+                <div class="scan-icon blocked">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="scan-title">Packages Blocked</div>
+                <div class="scan-status passed">Passed</div>
+            </div>
+            <div class="scan-card">
+                <div class="scan-icon compliance">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="scan-title">Custom Compliance Checks</div>
+                <div class="scan-status passed">Passed</div>
+            </div>
+            <div class="scan-card">
+                <div class="scan-icon cves">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="scan-title">CVEs Blocked</div>
+                <div class="scan-status passed">Passed</div>
+            </div>
+            <div class="scan-card">
+                <div class="scan-icon exploit">
+                    <i class="fas fa-bug"></i>
+                </div>
+                <div class="scan-title">Vulnerability Exploitability and Severity</div>
+                <div class="scan-status passed">Passed</div>
+            </div>
+            <div class="scan-card">
+                <div class="scan-icon malware">
+                    <i class="fas fa-virus"></i>
+                </div>
+                <div class="scan-title">Malware</div>
+                <div class="scan-status passed">Passed</div>
+            </div>
+            <div class="scan-card">
+                <div class="scan-icon sensitive">
+                    <i class="fas fa-eye-slash"></i>
+                </div>
+                <div class="scan-title">Sensitive Data</div>
+                <div class="scan-status passed">Passed</div>
+            </div>
+        </div>
+    `;
+}
+
+function getVulnerabilitiesTabContent() {
+    if (!currentDetailItem) return '';
+    
+    const findings = currentDetailItem.securityFindings;
+    const total = findings.critical + findings.high + findings.medium + findings.low + findings.negligible;
+    
+    return `
+        <div class="vulnerability-overview">
+            <span class="vuln-summary-text">Vulnerabilities:</span>
+            <div class="vuln-summary-badges">
+                ${findings.critical > 0 ? `<span class="finding-badge finding-critical">${findings.critical} Critical</span>` : ''}
+                ${findings.high > 0 ? `<span class="finding-badge finding-high">${findings.high} High</span>` : ''}
+                ${findings.medium > 0 ? `<span class="finding-badge finding-medium">${findings.medium} Medium</span>` : ''}
+                ${findings.low > 0 ? `<span class="finding-badge finding-low">${findings.low} Low</span>` : ''}
+                ${findings.negligible > 0 ? `<span class="finding-badge finding-negligible">${findings.negligible} Negligible</span>` : ''}
+                ${total === 0 ? `<span style="color: #22c55e; font-weight: 500;">No vulnerabilities found</span>` : ''}
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Vulnerability Name</th>
+                        <th>Severity</th>
+                        <th>Custom Severity</th>
+                        <th>Resource</th>
+                        <th>Exploit Availability</th>
+                        <th>Vendor Fix</th>
+                        <th>vShield</th>
+                        <th>Qualys IDs</th>
+                        <th>Acknowledged Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ALAS2-2024-2521</td>
+                        <td><span class="finding-badge finding-high">High</span></td>
+                        <td>-</td>
+                        <td>glibc</td>
+                        <td>-</td>
+                        <td><i class="fas fa-check" style="color: #22c55e;"></i></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td><a href="#" style="color: #3b82f6;">Suppress</a></td>
+                    </tr>
+                    <tr>
+                        <td>ALAS2-2024-2718</td>
+                        <td><span class="finding-badge finding-medium">Medium</span></td>
+                        <td>-</td>
+                        <td>glibc</td>
+                        <td>-</td>
+                        <td><i class="fas fa-check" style="color: #22c55e;"></i></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td><a href="#" style="color: #3b82f6;">Suppress</a></td>
+                    </tr>
+                    <tr>
+                        <td>ALAS2-2025-2828</td>
+                        <td><span class="finding-badge finding-medium">Medium</span></td>
+                        <td>-</td>
+                        <td>glibc</td>
+                        <td>-</td>
+                        <td><i class="fas fa-check" style="color: #22c55e;"></i></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td><a href="#" style="color: #3b82f6;">Suppress</a></td>
+                    </tr>
+                    <tr>
+                        <td>ALAS2-2024-2607</td>
+                        <td><span class="finding-badge finding-low">Low</span></td>
+                        <td>-</td>
+                        <td>ca-certificates</td>
+                        <td>-</td>
+                        <td><i class="fas fa-check" style="color: #22c55e;"></i></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td><a href="#" style="color: #3b82f6;">Suppress</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function getResourcesTabContent() {
+    return `
+        <div style="margin-bottom: 1rem;">
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <span class="finding-badge finding-critical">0 Critical</span>
+                <span class="finding-badge finding-high">1 High</span>
+                <span class="finding-badge finding-medium">2 Medium</span>
+                <span class="finding-badge finding-low">1 Low</span>
+                <span class="finding-badge finding-negligible">0 Negligible</span>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" checked> Show Files
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox"> Hide Base Image Vulnerabilities (0)
+                </label>
+                <button class="btn btn-primary" style="margin-left: auto;">
+                    <i class="fas fa-download"></i> SBOM
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Resource</th>
+                        <th>Type</th>
+                        <th>Version</th>
+                        <th>Fix Version</th>
+                        <th>License</th>
+                        <th>Vulnerabilities</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="cursor: pointer;">
+                        <td>glibc</td>
+                        <td><i class="fas fa-cube" style="color: #6b7280;"></i> RPM Package</td>
+                        <td>2.26-63.amzn2.0.1</td>
+                        <td>2.26-64.amzn2.0.4</td>
+                        <td>GPL2, LGPL2</td>
+                        <td>
+                            <span class="finding-badge finding-high">1</span>
+                            <span class="finding-badge finding-medium">2</span>
+                        </td>
+                    </tr>
+                    <tr style="cursor: pointer;">
+                        <td>ca-certificates</td>
+                        <td><i class="fas fa-cube" style="color: #6b7280;"></i> RPM Package</td>
+                        <td>2021.2.50-72.amzn2.0.8</td>
+                        <td>2023.2.68-1.amzn...</td>
+                        <td>PD</td>
+                        <td>
+                            <span class="finding-badge finding-low">1</span>
+                        </td>
+                    </tr>
+                    <tr style="cursor: pointer;">
+                        <td>system-release</td>
+                        <td><i class="fas fa-cube" style="color: #6b7280;"></i> RPM Package</td>
+                        <td>1:2-14.amzn2</td>
+                        <td>None</td>
+                        <td>GPL2</td>
+                        <td><span style="color: #22c55e;">No Issues</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function getSensitiveDataTabContent() {
+    return `
+        <div class="empty-state">
+            <i class="fas fa-eye-slash"></i>
+            <h3>No sensitive information was found in the image.</h3>
+        </div>
+    `;
+}
+
+function getInformationTabContent() {
+    if (!currentDetailItem) return '';
+    
+    return `
+        <h3 style="margin-bottom: 1.5rem;">General Information</h3>
+        <div class="info-grid">
+            <div class="info-label">Architecture:</div>
+            <div class="info-value">${currentDetailItem.architecture}</div>
+            
+            <div class="info-label">Author:</div>
+            <div class="info-value">N/A</div>
+            
+            <div class="info-label">Content Digest:</div>
+            <div class="info-value">sha256:0475f03f7e1ed5bb018a7ed9003c9faf1531f8d1c3257cb120d46c39aa1bf8a8</div>
+            
+            <div class="info-label">Created:</div>
+            <div class="info-value">12/13/2023 09:41 PM</div>
+            
+            <div class="info-label">Docker Version:</div>
+            <div class="info-value">-</div>
+            
+            <div class="info-label">Environment:</div>
+            <div class="info-value">N/A</div>
+            
+            <div class="info-label">Image ID:</div>
+            <div class="info-value">sha256:0475f03f7e1ed5bb018a7ed9003c9faf1531f8d1c3257cb120d46c39aa1bf8a8</div>
+            
+            <div class="info-label">Image Labels:</div>
+            <div class="info-value">-</div>
+            
+            <div class="info-label">Operating System:</div>
+            <div class="info-value">Linux (amzn 2)</div>
+            
+            <div class="info-label">Repo Digest:</div>
+            <div class="info-value">-</div>
+        </div>
+    `;
+}
+
+function getScanHistoryTabContent() {
+    return `
+        <div class="table-container">
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th>Scan Date</th>
+                        <th>Image ID</th>
+                        <th>Security Status</th>
+                        <th>Image Creation Date</th>
+                        <th>Assigned Enforcer</th>
+                        <th>Assigned Scanner</th>
+                        <th>Scan results</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>05/18/2025 04:37 PM</td>
+                        <td>sha256:0475f03f7e1ed5b...</td>
+                        <td><span style="color: #22c55e;"><i class="fas fa-check-circle"></i> Passed</span></td>
+                        <td>12/13/2023 09:41 PM</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>
+                            <span class="finding-badge finding-high">1</span>
+                            <span class="finding-badge finding-medium">2</span>
+                            <span class="finding-badge finding-low">1</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>03/24/2025 03:35 PM</td>
+                        <td>sha256:0475f03f7e1ed5b...</td>
+                        <td><span style="color: #ea580c;"><i class="fas fa-exclamation-circle"></i> Non-compliant</span></td>
+                        <td>12/13/2023 09:41 PM</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>
+                            <span class="finding-badge finding-high">1</span>
+                            <span class="finding-badge finding-medium">1</span>
+                            <span class="finding-badge finding-low">1</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>01/29/2025 03:32 PM</td>
+                        <td>sha256:0475f03f7e1ed5b...</td>
+                        <td><span style="color: #22c55e;"><i class="fas fa-check-circle"></i> Passed</span></td>
+                        <td>12/13/2023 09:41 PM</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>
+                            <span class="finding-badge finding-high">1</span>
+                            <span class="finding-badge finding-medium">1</span>
+                            <span class="finding-badge finding-low">1</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>12/18/2024 03:32 PM</td>
+                        <td>sha256:0475f03f7e1ed5b...</td>
+                        <td><span style="color: #22c55e;"><i class="fas fa-check-circle"></i> Passed</span></td>
+                        <td>12/13/2023 09:41 PM</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>
+                            <span class="finding-badge finding-high">1</span>
+                            <span class="finding-badge finding-low">1</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function getEmptyTabContent(tabName) {
+    return `
+        <div class="empty-state">
+            <i class="fas fa-info-circle"></i>
+            <h3>${tabName.replace('-', ' ')} content coming soon</h3>
+            <p>This section is currently under development.</p>
+        </div>
+    `;
+} 
