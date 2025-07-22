@@ -80,6 +80,32 @@ const mockData = {
             dockerId: 'sha256:59728c6d6...',
             registryName: 'docker.io',
             repositoryName: 'node'
+        },
+        {
+            id: 7,
+            name: 'gcr.io/my-project/web-app:v1.2.3',
+            securityFindings: { critical: 1, high: 3, medium: 8, low: 12, negligible: 2 },
+            compliance: 'Non-Compliant',
+            registry: 'Google Registry',
+            registryType: 'Registry',
+            architecture: 'amd64',
+            aquaLabels: 'production',
+            dockerId: 'sha256:abc123def...',
+            registryName: 'gcr.io',
+            repositoryName: 'web-app'
+        },
+        {
+            id: 8,
+            name: 'quay.io/company/microservice:latest',
+            securityFindings: { critical: 0, high: 1, medium: 3, low: 5, negligible: 1 },
+            compliance: 'Compliant',
+            registry: 'Quay Registry',
+            registryType: 'Registry',
+            architecture: 'arm64',
+            aquaLabels: 'development',
+            dockerId: 'sha256:xyz789abc...',
+            registryName: 'quay.io',
+            repositoryName: 'microservice'
         }
     ],
     containers: [
@@ -129,6 +155,8 @@ let currentResourceType = 'images';
 let currentFilters = {};
 let currentSearchTerm = '';
 let filteredData = [];
+let currentGroupBy = '';
+let expandedGroups = new Set();
 
 // Initialize the inventory page
 document.addEventListener('DOMContentLoaded', function() {
@@ -177,12 +205,20 @@ function handleResourceTypeChange(event) {
     currentResourceType = event.target.value;
     currentFilters = {};
     currentSearchTerm = '';
+    currentGroupBy = '';
+    expandedGroups.clear();
     
     // Clear search input
     const searchInput = document.getElementById('inventorySearch');
     if (searchInput) {
         searchInput.value = '';
         searchInput.placeholder = `Search by ${getResourceTypeName()}`;
+    }
+    
+    // Clear group by selection
+    const groupBySelect = document.getElementById('groupBySelect');
+    if (groupBySelect) {
+        groupBySelect.value = '';
     }
     
     // Clear active filters
@@ -193,6 +229,22 @@ function handleResourceTypeChange(event) {
     
     // Update total count
     updateTotalCount();
+}
+
+function handleGroupByChange() {
+    const groupBySelect = document.getElementById('groupBySelect');
+    currentGroupBy = groupBySelect.value;
+    expandedGroups.clear();
+    
+    // If grouping is enabled, expand the first group by default
+    if (currentGroupBy) {
+        const groups = getGroupedData();
+        if (groups.length > 0) {
+            expandedGroups.add(groups[0].key);
+        }
+    }
+    
+    renderTable();
 }
 
 function getResourceTypeName() {
@@ -250,18 +302,207 @@ function applyFiltersAndSearch() {
 
 function renderTable() {
     const tableBody = document.getElementById('inventoryTableBody');
+    const table = document.querySelector('.inventory-table');
     if (!tableBody) return;
     
     tableBody.innerHTML = '';
     
-    if (currentResourceType === 'images') {
-        renderImagesTable();
-    } else if (currentResourceType === 'containers') {
-        renderContainersTable();
-    } else if (currentResourceType === 'vms') {
-        renderVMsTable();
+    // Toggle grouped class based on grouping
+    if (currentGroupBy) {
+        table.classList.add('grouped');
+        renderGroupedTable();
     } else {
-        renderGenericTable();
+        table.classList.remove('grouped');
+        if (currentResourceType === 'images') {
+            renderImagesTable();
+        } else if (currentResourceType === 'containers') {
+            renderContainersTable();
+        } else if (currentResourceType === 'vms') {
+            renderVMsTable();
+        } else {
+            renderGenericTable();
+        }
+    }
+}
+
+function getGroupedData() {
+    if (!currentGroupBy) return [];
+    
+    const groups = {};
+    
+    filteredData.forEach(item => {
+        let groupValue;
+        switch (currentGroupBy) {
+            case 'registry':
+                groupValue = item.registry || 'Unknown Registry';
+                break;
+            case 'registryType':
+                groupValue = item.registryType || 'Unknown Type';
+                break;
+            case 'architecture':
+                groupValue = item.architecture || 'Unknown Architecture';
+                break;
+            case 'compliance':
+                groupValue = item.compliance || 'Unknown';
+                break;
+            default:
+                groupValue = 'Other';
+        }
+        
+        if (!groups[groupValue]) {
+            groups[groupValue] = [];
+        }
+        groups[groupValue].push(item);
+    });
+    
+    // Convert to array and sort by group name
+    return Object.keys(groups)
+        .sort()
+        .map(key => ({
+            key,
+            items: groups[key],
+            count: groups[key].length
+        }));
+}
+
+function renderGroupedTable() {
+    const tableBody = document.getElementById('inventoryTableBody');
+    const groups = getGroupedData();
+    
+    // Ensure table headers are correct for the current resource type
+    if (currentResourceType === 'containers') {
+        updateTableHeaders([
+            '', 'Name', 'Status', 'Namespace', 'Image', 'Node', 'Created'
+        ]);
+    } else if (currentResourceType === 'vms') {
+        updateTableHeaders([
+            '', 'Name', 'OS', 'Status', 'IP Address', 'Region', 'Instance Type'
+        ]);
+    } else {
+        // Default to images headers
+        updateTableHeaders([
+            '', 'Name', 'Security Findings', 'Compliance', 'Registry', 'Registry Type', 'Architecture', 'Aqua Labels', 'Docker Id'
+        ]);
+    }
+    
+    groups.forEach(group => {
+        // Create group header
+        const groupRow = document.createElement('tr');
+        groupRow.className = `group-header ${expandedGroups.has(group.key) ? '' : 'collapsed'}`;
+        groupRow.onclick = () => toggleGroup(group.key);
+        
+        groupRow.innerHTML = `
+            <td colspan="9">
+                <div class="group-header-content">
+                    <div class="group-title">
+                        <i class="fas fa-chevron-down group-icon"></i>
+                        <span>${getGroupDisplayName(currentGroupBy)}: ${group.key}</span>
+                    </div>
+                    <div class="group-stats">
+                        <span class="group-count">${group.count} items</span>
+                        ${getGroupSummary(group.items)}
+                    </div>
+                </div>
+            </td>
+        `;
+        
+        tableBody.appendChild(groupRow);
+        
+        // Add items directly to the main tbody instead of creating separate tbody
+        group.items.forEach(item => {
+            const row = document.createElement('tr');
+            row.className = `group-items ${expandedGroups.has(group.key) ? '' : 'collapsed'}`;
+            row.dataset.groupKey = group.key.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
+            row.style.cursor = 'pointer';
+            row.onclick = (e) => {
+                if (e.target.type !== 'checkbox') {
+                    openDetailPanel(item);
+                }
+            };
+            
+            if (currentResourceType === 'images') {
+                row.innerHTML = getImageRowHTML(item);
+            } else if (currentResourceType === 'containers') {
+                row.innerHTML = getContainerRowHTML(item);
+            } else if (currentResourceType === 'vms') {
+                row.innerHTML = getVMRowHTML(item);
+            }
+            
+            tableBody.appendChild(row);
+        });
+    });
+}
+
+function getGroupDisplayName(groupBy) {
+    const displayNames = {
+        'registry': 'Registry',
+        'registryType': 'Registry Type',
+        'architecture': 'Architecture',
+        'compliance': 'Compliance Status'
+    };
+    return displayNames[groupBy] || groupBy;
+}
+
+function getGroupSummary(items) {
+    if (currentResourceType === 'images') {
+        let totalFindings = { critical: 0, high: 0, medium: 0, low: 0, negligible: 0 };
+        items.forEach(item => {
+            totalFindings.critical += item.securityFindings.critical;
+            totalFindings.high += item.securityFindings.high;
+            totalFindings.medium += item.securityFindings.medium;
+            totalFindings.low += item.securityFindings.low;
+            totalFindings.negligible += item.securityFindings.negligible;
+        });
+        
+        const badges = [];
+        if (totalFindings.critical > 0) badges.push(`<span class="finding-badge finding-critical">${totalFindings.critical}</span>`);
+        if (totalFindings.high > 0) badges.push(`<span class="finding-badge finding-high">${totalFindings.high}</span>`);
+        if (totalFindings.medium > 0) badges.push(`<span class="finding-badge finding-medium">${totalFindings.medium}</span>`);
+        if (totalFindings.low > 0) badges.push(`<span class="finding-badge finding-low">${totalFindings.low}</span>`);
+        if (totalFindings.negligible > 0) badges.push(`<span class="finding-badge finding-negligible">${totalFindings.negligible}</span>`);
+        
+        return badges.length > 0 ? badges.join(' ') : '<span style="color: #22c55e;">No issues</span>';
+    }
+    
+    return '';
+}
+
+function toggleGroup(groupKey) {
+    // Close all other groups (only one open at a time)
+    const wasExpanded = expandedGroups.has(groupKey);
+    expandedGroups.clear();
+    
+    // If it wasn't expanded, expand it now
+    if (!wasExpanded) {
+        expandedGroups.add(groupKey);
+    }
+    
+    // Update all group headers
+    document.querySelectorAll('.group-header').forEach(header => {
+        header.classList.add('collapsed');
+    });
+    
+    // Hide all group items
+    document.querySelectorAll('tr.group-items').forEach(row => {
+        row.classList.add('collapsed');
+    });
+    
+    // Expand the selected group if it should be expanded
+    if (expandedGroups.has(groupKey)) {
+        const groupId = groupKey.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
+        
+        // Find and expand the header
+        const headers = document.querySelectorAll('.group-header');
+        headers.forEach(header => {
+            if (header.onclick && header.onclick.toString().includes(groupKey)) {
+                header.classList.remove('collapsed');
+            }
+        });
+        
+        // Show the group items
+        document.querySelectorAll(`tr.group-items[data-group-key="${groupId}"]`).forEach(row => {
+            row.classList.remove('collapsed');
+        });
     }
 }
 
@@ -277,33 +518,37 @@ function renderImagesTable() {
                 openDetailPanel(item);
             }
         };
-        row.innerHTML = `
-            <td><input type="checkbox" data-id="${item.id}"></td>
-            <td>
-                <div class="image-name" title="${item.name}">${item.name}</div>
-            </td>
-            <td>
-                <div class="security-findings">
-                    ${item.securityFindings.critical > 0 ? `<span class="finding-badge finding-critical">${item.securityFindings.critical}</span>` : ''}
-                    ${item.securityFindings.high > 0 ? `<span class="finding-badge finding-high">${item.securityFindings.high}</span>` : ''}
-                    ${item.securityFindings.medium > 0 ? `<span class="finding-badge finding-medium">${item.securityFindings.medium}</span>` : ''}
-                    ${item.securityFindings.low > 0 ? `<span class="finding-badge finding-low">${item.securityFindings.low}</span>` : ''}
-                    ${item.securityFindings.negligible > 0 ? `<span class="finding-badge finding-negligible">${item.securityFindings.negligible}</span>` : ''}
-                </div>
-            </td>
-            <td>
-                <div class="compliance-status">
-                    <span class="compliance-compliant">Compliant</span>
-                </div>
-            </td>
-            <td>${item.registry}</td>
-            <td><span class="registry-type">${item.registryType}</span></td>
-            <td><span class="architecture-badge">${item.architecture}</span></td>
-            <td>${item.aquaLabels || '-'}</td>
-            <td><div class="docker-id" title="${item.dockerId}">${item.dockerId}</div></td>
-        `;
+        row.innerHTML = getImageRowHTML(item);
         tableBody.appendChild(row);
     });
+}
+
+function getImageRowHTML(item) {
+    return `
+        <td><input type="checkbox" data-id="${item.id}"></td>
+        <td>
+            <div class="image-name" title="${item.name}">${item.name}</div>
+        </td>
+        <td>
+            <div class="security-findings">
+                ${item.securityFindings.critical > 0 ? `<span class="finding-badge finding-critical">${item.securityFindings.critical}</span>` : ''}
+                ${item.securityFindings.high > 0 ? `<span class="finding-badge finding-high">${item.securityFindings.high}</span>` : ''}
+                ${item.securityFindings.medium > 0 ? `<span class="finding-badge finding-medium">${item.securityFindings.medium}</span>` : ''}
+                ${item.securityFindings.low > 0 ? `<span class="finding-badge finding-low">${item.securityFindings.low}</span>` : ''}
+                ${item.securityFindings.negligible > 0 ? `<span class="finding-badge finding-negligible">${item.securityFindings.negligible}</span>` : ''}
+            </div>
+        </td>
+        <td>
+            <div class="compliance-status">
+                <span class="compliance-compliant">Compliant</span>
+            </div>
+        </td>
+        <td>${item.registry}</td>
+        <td><span class="registry-type">${item.registryType}</span></td>
+        <td><span class="architecture-badge">${item.architecture}</span></td>
+        <td>${item.aquaLabels || '-'}</td>
+        <td><div class="docker-id" title="${item.dockerId}">${item.dockerId}</div></td>
+    `;
 }
 
 function renderContainersTable() {
@@ -316,17 +561,21 @@ function renderContainersTable() {
     
     filteredData.forEach(item => {
         const row = document.createElement('tr');
-        row.innerHTML = `
-            <td><input type="checkbox" data-id="${item.id}"></td>
-            <td><div class="image-name">${item.name}</div></td>
-            <td><span class="compliance-compliant">${item.status}</span></td>
-            <td>${item.namespace}</td>
-            <td><div class="image-name">${item.image}</div></td>
-            <td>${item.node}</td>
-            <td>${new Date(item.created).toLocaleDateString()}</td>
-        `;
+        row.innerHTML = getContainerRowHTML(item);
         tableBody.appendChild(row);
     });
+}
+
+function getContainerRowHTML(item) {
+    return `
+        <td><input type="checkbox" data-id="${item.id}"></td>
+        <td><div class="image-name">${item.name}</div></td>
+        <td><span class="compliance-compliant">${item.status}</span></td>
+        <td>${item.namespace}</td>
+        <td><div class="image-name">${item.image}</div></td>
+        <td>${item.node}</td>
+        <td>${new Date(item.created).toLocaleDateString()}</td>
+    `;
 }
 
 function renderVMsTable() {
@@ -339,17 +588,21 @@ function renderVMsTable() {
     
     filteredData.forEach(item => {
         const row = document.createElement('tr');
-        row.innerHTML = `
-            <td><input type="checkbox" data-id="${item.id}"></td>
-            <td><div class="image-name">${item.name}</div></td>
-            <td>${item.os}</td>
-            <td><span class="compliance-compliant">${item.status}</span></td>
-            <td><div class="docker-id">${item.ipAddress}</div></td>
-            <td>${item.region}</td>
-            <td><span class="registry-type">${item.instanceType}</span></td>
-        `;
+        row.innerHTML = getVMRowHTML(item);
         tableBody.appendChild(row);
     });
+}
+
+function getVMRowHTML(item) {
+    return `
+        <td><input type="checkbox" data-id="${item.id}"></td>
+        <td><div class="image-name">${item.name}</div></td>
+        <td>${item.os}</td>
+        <td><span class="compliance-compliant">${item.status}</span></td>
+        <td><div class="docker-id">${item.ipAddress}</div></td>
+        <td>${item.region}</td>
+        <td><span class="registry-type">${item.instanceType}</span></td>
+    `;
 }
 
 function renderGenericTable() {

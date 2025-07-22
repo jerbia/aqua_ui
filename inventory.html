@@ -175,6 +175,17 @@
                                 </select>
                             </div>
                             
+                            <div class="control-group">
+                                <label>Group by</label>
+                                <select class="form-select" id="groupBySelect" onchange="handleGroupByChange()">
+                                    <option value="">No Grouping</option>
+                                    <option value="registry">Registry</option>
+                                    <option value="registryType">Registry Type</option>
+                                    <option value="architecture">Architecture</option>
+                                    <option value="compliance">Compliance</option>
+                                </select>
+                            </div>
+                            
                             <div class="control-group search-group">
                                 <label>&nbsp;</label>
                                 <div class="search-input-container">
