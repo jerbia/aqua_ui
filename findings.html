@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Findings - Aqua Security</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="findings-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-shield-alt"></i>
+                <span>WORKLOAD PROTECTION</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboards</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-search"></i>
+                            <span>Risk Explorer</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="inventory.html" class="nav-link">
+                            <i class="fas fa-boxes"></i>
+                            <span>Inventory</span>
+                        </a>
+                    </li>
+                    <li class="nav-item active">
+                        <a href="findings.html" class="nav-link">
+                            <i class="fas fa-search"></i>
+                            <span>Findings</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Incidents</span>
+                        </a>
+                       <li class="nav-item">
+                        <a href="index.html" class="nav-link">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Policies</span>
+                            <i class="fas fa-chevron-down nav-arrow"></i>
+                        </a>
+                        <ul class="nav-submenu">
+                            <li><a href="#" class="nav-sublink">Assurance Policies</a></li>
+                            <li><a href="index.html" class="nav-sublink">Runtime Policies</a></li>
+                            <li><a href="#" class="nav-sublink">Firewall Policies</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-cog"></i>
+                            <span>Administration</span>
+                            <i class="fas fa-chevron-right nav-arrow"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-sliders-h"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <div class="main-container">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <div class="logo">
+                        <svg width="110" height="35" viewBox="0 0 88 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g clip-path="url(#clip0_1494_12368)">
+                                <path d="M16.9099 10.6121V1.55128C16.9101 1.46511 16.8932 1.37974 16.8603 1.30009C16.8273 1.22044 16.7789 1.14807 16.7178 1.08714C16.6567 1.02621 16.5841 0.97791 16.5042 0.945024C16.4243 0.912139 16.3387 0.895312 16.2523 0.89551H13.1221V13.3813C13.1221 13.8835 13.7308 14.1345 14.0841 13.7785L16.6619 11.2079C16.7405 11.1297 16.8028 11.0369 16.8454 10.9346C16.8879 10.8324 16.9099 10.7228 16.9099 10.6121Z" fill="#FF0036"></path>
+                                <path d="M13.122 0.895508H7.1697C7.0587 0.895564 6.94879 0.917436 6.84627 0.959872C6.74375 1.00231 6.65062 1.06448 6.57221 1.14283L3.99436 3.71344C3.64113 4.06568 3.88915 4.67273 4.39269 4.67273H13.1258V0.895508H13.122Z" fill="#FFC900"></path>
+                                <path d="M9.74396 17.7577H0.657615C0.571201 17.7579 0.485598 17.7411 0.405723 17.7082C0.325849 17.6753 0.253275 17.627 0.19217 17.5661C0.131066 17.5051 0.0826339 17.4328 0.0496559 17.3531C0.0166779 17.2735 -0.000196474 17.1881 1.7259e-06 17.1019V13.9805H12.521C13.0245 13.9805 13.2763 14.5875 12.9193 14.9398L10.3414 17.5104C10.2631 17.5888 10.17 17.6511 10.0675 17.6935C9.96493 17.736 9.85498 17.7578 9.74396 17.7577Z" fill="#1904DA"></path>
+                                <path d="M0 13.9812V8.04558C5.68256e-05 7.93488 0.0219902 7.82529 0.0645461 7.72306C0.107102 7.62082 0.169446 7.52796 0.248014 7.44976L2.82586 4.87915C3.17909 4.52691 3.78786 4.77423 3.78786 5.27636V13.985L0 13.9812Z" fill="#08B1D5"></path>
+                                <path d="M36.8188 16.9264H29.198C24.9967 16.9264 21.5771 13.5164 21.5771 9.32695C21.5771 5.13753 24.9967 1.72754 29.198 1.72754C33.3992 1.72754 36.8188 5.13753 36.8188 9.32695V16.9264ZM29.198 4.81527C28.6038 4.81527 28.0155 4.93197 27.4665 5.1587C26.9176 5.38543 26.4189 5.71776 25.9987 6.13671C25.5786 6.55566 25.2453 7.05302 25.018 7.60041C24.7906 8.14779 24.6736 8.73447 24.6736 9.32695C24.6736 9.91943 24.7906 10.5061 25.018 11.0535C25.2453 11.6009 25.5786 12.0982 25.9987 12.5172C26.4189 12.9361 26.9176 13.2685 27.4665 13.4952C28.0155 13.7219 28.6038 13.8386 29.198 13.8386H33.7223V9.32695C33.7211 8.13074 33.2441 6.98387 32.3959 6.13803C31.5476 5.29218 30.3975 4.81646 29.198 4.81527Z" fill="currentColor"></path>
+                                <path d="M87.9999 16.9264H80.3791C76.1779 16.9264 72.7583 13.5164 72.7583 9.32695C72.7583 5.13753 76.1779 1.72754 80.3791 1.72754C84.5803 1.72754 87.9999 5.13753 87.9999 9.32695V16.9264ZM80.3791 4.81527C79.1792 4.81527 78.0284 5.29061 77.1799 6.13671C76.3314 6.98281 75.8547 8.13038 75.8547 9.32695C75.8547 10.5235 76.3314 11.6711 77.1799 12.5172C78.0284 13.3633 79.1792 13.8386 80.3791 13.8386H84.9035V9.32695C84.9072 6.83878 82.8743 4.81527 80.3791 4.81527Z" fill="currentColor"></path>
+                                <path d="M63.2701 16.9305C59.0651 16.9305 55.6455 13.5205 55.6455 9.3273V2.19629H58.7419V9.3273C58.7419 11.8155 60.7749 13.8427 63.2701 13.8427C65.7652 13.8427 67.7982 11.8155 67.7982 9.3273V2.19629H70.8946V9.3273C70.8946 13.5205 67.475 16.9305 63.2701 16.9305Z" fill="currentColor"></path>
+                                <path d="M46.2434 1.72754C42.0421 1.72754 38.6226 5.13753 38.6226 9.32695C38.6226 13.5164 42.0421 16.9264 46.2434 16.9264L49.3398 13.8386H46.2434C45.3485 13.8386 44.4738 13.574 43.7297 13.0783C42.9857 12.5825 42.4058 11.8779 42.0634 11.0535C41.7209 10.2291 41.6313 9.32195 41.8059 8.44677C41.9805 7.57159 42.4114 6.76768 43.0441 6.13671C43.6769 5.50574 44.4831 5.07604 45.3607 4.90196C46.2383 4.72788 47.148 4.81722 47.9748 5.1587C48.8015 5.50018 49.5081 6.07845 50.0052 6.82039C50.5024 7.56234 50.7677 8.43462 50.7677 9.32695V24.181H53.8642V9.32695C53.8642 5.13753 50.4446 1.72754 46.2434 1.72754Z" fill="currentColor"></path>
+                            </g>
+                            <defs>
+                                <clipPath id="clip0_1494_12368">
+                                    <rect width="88" height="23.2854" fill="white" transform="translate(0 0.895508)"></rect>
+                                </clipPath>
+                            </defs>
+                        </svg>
+                    </div>
+                    <nav class="breadcrumb">
+                        <span>Workload Protection</span>
+                        <i class="fas fa-chevron-right"></i>
+                        <span class="current">Findings</span>
+                    </nav>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-columns"></i>
+                        Columns
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Findings Container -->
+            <div class="findings-container">
+                <!-- Controls Row -->
+                <div class="findings-controls">
+                    <div class="controls-row">
+                        <div class="control-group">
+                            <label>Scope</label>
+                            <select class="form-select" id="scopeSelect">
+                                <option value="">All Scopes</option>
+                                <option value="production">Production</option>
+                                <option value="staging">Staging</option>
+                                <option value="development">Development</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>Finding Type</label>
+                            <select class="form-select" id="findingTypeSelect" onchange="handleFindingTypeChange()">
+                                <option value="vulnerabilities">Vulnerabilities</option>
+                                <option value="secrets">Secrets</option>
+                                <option value="misconfiguration">Misconfiguration</option>
+                                <option value="malware">Malware</option>
+                                <option value="aifindings">AI Findings</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>Sort by</label>
+                            <select class="form-select" id="sortBySelect">
+                                <option value="severity">Severity</option>
+                                <option value="name">Name</option>
+                                <option value="date">Date Found</option>
+                                <option value="resource">Resource</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>Group by</label>
+                            <select class="form-select" id="groupBySelect" onchange="handleGroupByChange()">
+                                <option value="">No Grouping</option>
+                                <option value="severity">Severity</option>
+                                <option value="resource">Resource</option>
+                                <option value="type">Type</option>
+                                <option value="status">Status</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group search-group">
+                            <label>&nbsp;</label>
+                            <div class="search-container">
+                                <input type="text" 
+                                       class="search-input" 
+                                       id="searchInput" 
+                                       placeholder="Search by finding name" 
+                                       onkeyup="handleSearch()">
+                                <i class="fas fa-search search-icon"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>&nbsp;</label>
+                            <button class="filter-btn" onclick="toggleFiltersPanel()">
+                                <i class="fas fa-filter"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="btn btn-link">Save As</button>
+                    <button class="btn btn-link">Save Changes</button>
+                </div>
+
+                <!-- Active Filters -->
+                <div class="active-filters" id="activeFilters">
+                    <!-- Filter chips will be added here dynamically -->
+                </div>
+
+                <!-- Table Container -->
+                <div class="table-container">
+                    <table class="findings-table" id="findingsTable">
+                        <thead>
+                            <tr id="tableHeaders">
+                                <th><input type="checkbox" id="selectAll" onchange="handleSelectAll()"></th>
+                                <th>Finding Name</th>
+                                <th>Severity</th>
+                                <th>Resource</th>
+                                <th>Status</th>
+                                <th>Date Found</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="findingsTableBody">
+                            <!-- Table rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        <span>Total <span id="totalCount">0</span></span>
+                        <select class="form-select" style="width: auto; margin-left: 1rem;">
+                            <option value="50">50/page</option>
+                            <option value="100">100/page</option>
+                            <option value="200">200/page</option>
+                        </select>
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="btn-pagination">1</button>
+                        <button class="btn-pagination">2</button>
+                        <button class="btn-pagination">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters Panel -->
+            <div class="filters-panel" id="filtersPanel">
+                <div class="filters-header">
+                    <h3>Filters</h3>
+                    <button class="btn-close" onclick="toggleFiltersPanel()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="filters-content">
+                    <div class="filter-section">
+                        <h4>Finding Details</h4>
+                        <div class="filter-field">
+                            <label>Severity</label>
+                            <select class="form-select filter-input" data-filter="severity">
+                                <option value="">All Severities</option>
+                                <option value="Critical">Critical</option>
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+                        <div class="filter-field">
+                            <label>Status</label>
+                            <select class="form-select filter-input" data-filter="status">
+                                <option value="">All Statuses</option>
+                                <option value="Open">Open</option>
+                                <option value="Fixed">Fixed</option>
+                                <option value="Acknowledged">Acknowledged</option>
+                                <option value="Suppressed">Suppressed</option>
+                            </select>
+                        </div>
+                        <div class="filter-field">
+                            <label>Resource Type</label>
+                            <select class="form-select filter-input" data-filter="resourceType">
+                                <option value="">All Types</option>
+                                <option value="Image">Image</option>
+                                <option value="Container">Container</option>
+                                <option value="Host">Host</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="filters-actions">
+                    <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+                    <button class="btn btn-primary" onclick="applyAllFilters()">Apply Filters</button>
+                </div>
+            </div>
+
+            <!-- Detail Panel -->
+            <div class="detail-panel" id="detailPanel">
+                <div class="detail-header">
+                    <div class="detail-title">
+                        <h2 id="detailTitle">Finding Details</h2>
+                        <p id="detailSubtitle">Details about the selected finding</p>
+                    </div>
+                    <button class="btn-close" onclick="closeDetailPanel()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="detail-tabs">
+                    <button class="tab-btn active" data-tab="overview">Overview</button>
+                    <button class="tab-btn" data-tab="remediation">Remediation</button>
+                    <button class="tab-btn" data-tab="affected">Affected Resources</button>
+                    <button class="tab-btn" data-tab="history">History</button>
+                </div>
+                
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Detail Panel -->
+        <div class="detail-panel" id="detailPanel">
+            <div class="detail-header">
+                <div class="detail-title">
+                    <h2 id="detailTitle">Finding Details</h2>
+                    <p id="detailSubtitle">Details about the selected finding</p>
+                </div>
+                <button class="btn-close" onclick="closeDetailPanel()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="detail-tabs">
+                <button class="tab-btn active" data-tab="overview">Overview</button>
+                <button class="tab-btn" data-tab="remediation">Remediation</button>
+                <button class="tab-btn" data-tab="affected">Affected Resources</button>
+                <button class="tab-btn" data-tab="history">History</button>
+            </div>
+            
+            <div class="detail-content" id="detailContent">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Acknowledge Modal -->
+    <div id="acknowledgeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Acknowledge Finding</h3>
+                <span class="close" onclick="closeAcknowledgeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Choose how you want to acknowledge this finding:</p>
+                <div class="acknowledge-options">
+                    <label class="acknowledge-option">
+                        <input type="radio" name="acknowledgeType" value="specific" checked>
+                        <span class="radio-custom"></span>
+                        <div class="option-content">
+                            <strong>Suppress on specific resource</strong>
+                            <p>Only suppress this finding on the current resource</p>
+                        </div>
+                    </label>
+                    
+                    <label class="acknowledge-option">
+                        <input type="radio" name="acknowledgeType" value="criteria">
+                        <span class="radio-custom"></span>
+                        <div class="option-content">
+                            <strong>Suppress on all resources that match criteria</strong>
+                            <p>Suppress this finding on all resources with similar characteristics</p>
+                        </div>
+                    </label>
+                    
+                    <label class="acknowledge-option">
+                        <input type="radio" name="acknowledgeType" value="all">
+                        <span class="radio-custom"></span>
+                        <div class="option-content">
+                            <strong>Suppress on all resources</strong>
+                            <p>Suppress this finding globally across all resources</p>
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="acknowledge-reason">
+                    <label for="acknowledgeReason">Reason for acknowledgment (optional):</label>
+                    <textarea id="acknowledgeReason" placeholder="Enter reason for acknowledging this finding..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAcknowledgeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmAcknowledge()">Acknowledge</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="findings-script.js"></script>
+</body>
+</html> 
